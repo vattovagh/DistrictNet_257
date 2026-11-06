@@ -1,0 +1,9 @@
+upstream/
+results/*
+!results/.gitkeep
+data/raw/*
+data/cities/*
+data/costs/*
+!data/*/.gitkeep
+*.jld2
+.DS_Store
