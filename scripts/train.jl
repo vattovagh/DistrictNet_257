@@ -5,6 +5,7 @@
 # TODO: implement other functions called in this one. They currently aren't in this project, and this code won't run yet.
 
 export train_and_fit
+"""
 using InferOpt, Plots
 using MLUtils, GraphNeuralNetworks, Graphs, MetaGraphs, GraphPlot
 using JSON, FilePaths, Random, LinearAlgebra
@@ -14,9 +15,10 @@ using Base.Filesystem: isfile
 using Combinatorics, Optim
 using JuMP, GLPK, CxxWrap, DistributedArrays, JLD2
 
-# these hyperparameters are taken from original DistrictNet.
-
 include("instance.jl")
+"""
+
+# these hyperparameters are taken from original DistrictNet.
 
 # Constants definition
 const NB_BU_LARGE = 120
@@ -160,4 +162,8 @@ return model to be fitted
     end
     jldsave(model_name; model_state)
     return model, mean_train, std_train
+end
+
+if abspath(PROGRAM_FILE) == @__FILE__
+    train_and_fit()
 end
