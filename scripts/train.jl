@@ -4,8 +4,6 @@
 # condensed version of train and fit from DistrictNet. parameter nb = 100, model = districtNet257
 # TODO: implement other functions called in this one. They currently aren't in this project, and this code won't run yet.
 
-# these hyperparameters are taken from original DistrictNet.
-
 export train_and_fit
 using InferOpt, Plots
 using MLUtils, GraphNeuralNetworks, Graphs, MetaGraphs, GraphPlot
@@ -15,6 +13,10 @@ using DataStructures, Serialization, FileIO
 using Base.Filesystem: isfile
 using Combinatorics, Optim
 using JuMP, GLPK, CxxWrap, DistributedArrays, JLD2
+
+# these hyperparameters are taken from original DistrictNet.
+
+include("instance.jl")
 
 # Constants definition
 const NB_BU_LARGE = 120
@@ -36,6 +38,33 @@ const MC_SAMPLES = 20
 const MAX_TIME = 1200
 const PERTURBATION_PROBABILITY = 0.985
 const PENALTY = 10000
+
+# helpers
+
+function normalize_features(data, MEAN = nothing, STD = nothing)
+    data_features = [x[1].feature for x in data]
+    data_features = hcat(data_features...)
+    if MEAN == nothing && STD == nothing
+        MEAN = mean(data_features, dims = 2) #*0? The original paper had this. not sure why.
+        STD = std(data_features, dims = 2)
+    end
+
+    for i = 1:length(data)
+        data[i][1].feature = (data[i][1].feature .- MEAN) ./ STD
+        data[i][1].gnn_graph.ndata.x = Float32.(data[i][1].feature)
+    end
+    data_features = nothing
+    GC.gc()
+    return data, MEAN, STD
+end
+
+function decayed_learning_rate(epoch, initial_lr,
+                               decay_steps=10, decay_rate=0.9, min_lr=0.0001)
+    lr = max(initial_lr * (decay_rate ^ floor(epoch / decay_steps)), min_lr)
+    return lr
+end
+
+# subfunctions for training
 
 function build_gnn_model(input_size, hidden_size)
 """
@@ -100,12 +129,14 @@ function train_GNN(model, data_train, data_test, hyperparams)
     return model
 end
 
+# main train/fit function
+
 function train_and_fit()
 """
 return model to be fitted
 """
     nb_data = 100
-    data_train = aggregateCityTrainingData(nb_data)
+    data_train = aggregateCityTrainingData(nb_data) # will occur in another function
     data_train, data_test = splitobs(shuffleobs(data_train), at = 1.0)
     println("Training data size: ", length(data_train))
     data_train, mean_train, std_train = normalize_features(data_train)
