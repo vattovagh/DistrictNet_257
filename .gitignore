@@ -4,3 +4,4 @@ results/*
 !data/*/.gitkeep
 *.jld2
 .DS_Store
+notes.txt

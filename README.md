@@ -18,3 +18,7 @@ All of this data is pulled from the original DistrictNet project.
 `cities/` contains the training data that gets processed into the model.
 
 `costs/` contains the predefined costs so re-generation is not needed.
+
+# Code
+
+`train.jl` should encapsulate the whole training step of DistrictNet.
