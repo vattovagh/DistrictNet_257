@@ -2,7 +2,7 @@
 
 julia_version = "1.10.13"
 manifest_format = "2.0"
-project_hash = "223b46c3cf939ba18dfb65cbeb21c83ae95fcaf8"
+project_hash = "72b494ec6cc2820cddbc581d26a26186fc7a182f"
 
 [[deps.ADTypes]]
 deps = ["PrecompileTools"]
@@ -229,6 +229,11 @@ git-tree-sha1 = "b10d0b65641d57b8b4d5e234446582de5047050d"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
 version = "0.11.5"
 
+[[deps.Combinatorics]]
+git-tree-sha1 = "c761b00e7755700f9cdf5b02039939d1359330e1"
+uuid = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+version = "1.1.0"
+
 [[deps.CommonSubexpressions]]
 deps = ["MacroTools"]
 git-tree-sha1 = "cda2cfaebb4be89c9084adaca7dd7333369715c5"
@@ -302,6 +307,12 @@ version = "1.6.1"
 git-tree-sha1 = "54b76cbb40d9a0f5368c880725b2f141da77c94f"
 uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 version = "4.2.0"
+
+[[deps.CxxWrap]]
+deps = ["Libdl", "MacroTools", "libcxxwrap_julia_jll"]
+git-tree-sha1 = "f7a997d3959648a818c45dda059a45844300b94d"
+uuid = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
+version = "0.17.5"
 
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
@@ -978,6 +989,18 @@ version = "1.2.0"
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 version = "2.28.1010+0"
+
+[[deps.MetaGraphs]]
+deps = ["Graphs", "Random"]
+git-tree-sha1 = "a4da0816e9bd59c44bbb7bdc3a07f2796e1d856b"
+uuid = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
+version = "0.9.0"
+
+    [deps.MetaGraphs.extensions]
+    MetaGraphsJLD2Ext = ["Graphs", "JLD2"]
+
+    [deps.MetaGraphs.weakdeps]
+    JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 
 [[deps.MicrosoftMPI_jll]]
 deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
@@ -1673,6 +1696,12 @@ version = "1.1.8+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 version = "5.11.0+0"
+
+[[deps.libcxxwrap_julia_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "2eecfd1759a176424159c1993b66f012a230319f"
+uuid = "3eaa8342-bff7-56a5-9981-c04077f7cee7"
+version = "0.14.12+0"
 
 [[deps.mpif_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "MPIABI_jll", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "TOML"]

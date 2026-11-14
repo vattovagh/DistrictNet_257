@@ -4,3 +4,87 @@
 # TODO: local_search(city, partition, cost_fn) -> Partition             (improvement step)
 # TODO: exact_solve(city, cost_fn) -> Partition                         (JuMP+GLPK, tiny instances only)
 # TODO: partition_from_forest(forest) -> Partition
+
+function compute_node_matrix(subgraphs, num_vertices)
+    matrix = zeros(Int, length(subgraphs), num_vertices)
+    for (i, subgraph) in enumerate(subgraphs)
+        for node in subgraph
+            matrix[i, node] = 1
+        end
+    end
+    return matrix
+end
+
+function enumerate_connected_subgraphs(
+    G::AbstractGraph,
+    k::Int,
+    m::Int,
+    remove_depots::Bool = true,
+)
+    subgraphs = []
+    non_root_nodes = collect(vertices(G))
+    if remove_depots
+        non_root_nodes = setdiff(vertices(G), nv(G))
+    end
+    for nb_nodes = k:m
+        for selected_nodes in combinations(non_root_nodes, nb_nodes)
+            SG, _ = induced_subgraph(G, selected_nodes)
+            if is_connected(SG)
+                push!(subgraphs, selected_nodes)
+            end
+        end
+    end
+    return subgraphs
+end
+
+function districting_exact_solver(instance, costloader)
+    lower_bound, upper_bound, num_district = instance.min_district_size,
+    instance.max_district_size,
+    instance.num_blocks / instance.target_district_size
+    # Compute unique subgraphs
+    unique_subgraphs = enumerate_connected_subgraphs(instance.graph, lower_bound, upper_bound)
+    node_matrix = compute_node_matrix(unique_subgraphs, nv(instance.graph) - 1)
+    mapping = [
+        [get_prop(instance.graph, j, :id) for j in unique_subgraphs[i]] for
+        i = 1:length(unique_subgraphs)
+    ]
+    mapping_idx = [check_1d_in_2d(i, costloader.DistrictIds) for i in mapping]
+
+    # Compute MST costs
+    mst_costs = [
+        mapping_idx[i] == nothing ? 1000 : costloader.Cost[mapping_idx[i]] for
+        i = 1:length(mapping_idx)
+    ]
+
+    y_opt = set_partitioning_optimizer(node_matrix, mst_costs, nv(instance.graph) - 1, num_district)
+
+    if y_opt == 0
+        println("No solution found ",instance.city_name)
+        return nothing, nothing
+    else
+        districts =[Vector{Int64}(unique_subgraphs[i]) for i = 1:length(y_opt) if y_opt[i] == 1]
+        solution = create_solution(instance, districts, costloader, "Districting")
+        return solution, unique_subgraphs
+    end
+end
+
+function set_partitioning_optimizer(node_matrix, mst_costs, num_vertices, num_subgraphs)
+    model = Model(GLPK.Optimizer)
+    @variable(model, y[1:size(node_matrix, 1)], Bin)
+    @objective(model, Min, sum(mst_costs[i] * y[i] for i = 1:size(node_matrix, 1)))
+
+    for j = 1:num_vertices
+        @constraint(
+            model,
+            sum(node_matrix[i, j] * y[i] for i = 1:size(node_matrix, 1)) == 1
+        )
+    end
+    @constraint(model, sum(y) == num_subgraphs)
+    optimize!(model)
+
+    if termination_status(model) == MOI.OPTIMAL
+        return value.(y)
+    else
+        return 0
+    end
+end

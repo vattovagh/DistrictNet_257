@@ -14,9 +14,9 @@ using DataStructures, Serialization, FileIO
 using Base.Filesystem: isfile
 using Combinatorics, Optim
 using JuMP, GLPK, CxxWrap, DistributedArrays, JLD2
-
-include("instance.jl")
 """
+
+include("../src/instance.jl")
 
 # these hyperparameters are taken from original DistrictNet.
 
