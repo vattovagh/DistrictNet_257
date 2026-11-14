@@ -64,12 +64,12 @@ end
 function compute_cost_via_CMST(instance::Instance, district::District)
     nodes = district.nodes
     if length(nodes) <= 1
-        return PENALITY * instance.max_district_size
+        return PENALTY * instance.max_district_size
     end
     sub_graph, _ = induced_subgraph(instance.graph, nodes)
     cost = sum(get_prop(sub_graph, edge, :weight) for edge in prim_mst(sub_graph))
     ls, us = instance.min_district_size, instance.max_district_size
-    cost += PENALITY * max(0, length(district.nodes) - us, ls - length(district.nodes))
+    cost += PENALTY * max(0, length(district.nodes) - us, ls - length(district.nodes))
     return cost + compute_depot_cost(instance, nodes)
 end
 

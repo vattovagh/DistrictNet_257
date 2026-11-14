@@ -71,7 +71,7 @@ function compute_subgraph_mst_cost(subgraphs, graph)
     return Float64.(mst_costs)
 end
 
-function cmst_exact_solver(theta, kwargs...)
+function cmst_exact_solver(theta; kwargs...)
     instance = kwargs[:instance]
     subgraphs = kwargs[:subgraphs]
     # Update edge weights

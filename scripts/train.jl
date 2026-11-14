@@ -107,7 +107,7 @@ function train_GNN(model, data_train, data_test, hyperparams)
     loss = FenchelYoungLoss(regularized_predictor)
 
     # Loss function for Flux
-    flux_loss(x, y) = loss(model(x.gnn_graph), y, x.instance, x.subgraphs) 
+    flux_loss(x, y) = loss(model(x.gnn_graph), y; instance=x.instance, subgraphs=x.subgraphs)
     # Compute total loss for a batch
     flux_loss_batch(batch) = sum(flux_loss(item[1], item[2]) for item in batch) 
 
