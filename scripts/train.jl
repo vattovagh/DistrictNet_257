@@ -90,6 +90,15 @@ function build_gnn_model(input_size, hidden_size)
     return model
 end
 
+function randomize_data(data, mc_samples=1)
+    temps_data = []
+    for item in data
+        y = randomized_constructor(item[1].solution, mc_samples)
+        push!(temps_data, (item[1], y))
+    end
+    return temps_data
+end
+
 function train_GNN(model, data_train, data_test, hyperparams)
     start_time = time()
 
@@ -98,7 +107,7 @@ function train_GNN(model, data_train, data_test, hyperparams)
     loss = FenchelYoungLoss(regularized_predictor)
 
     # Loss function for Flux
-    flux_loss(x, y) = loss(model(x.gnn_graph), y; instance=x.instance, subgraphs=x.subgraphs) 
+    flux_loss(x, y) = loss(model(x.gnn_graph), y, x.instance, x.subgraphs) 
     # Compute total loss for a batch
     flux_loss_batch(batch) = sum(flux_loss(item[1], item[2]) for item in batch) 
 
@@ -108,13 +117,13 @@ function train_GNN(model, data_train, data_test, hyperparams)
     opt = Flux.Optimise.Adam(initial_lr)
     LinearAlgebra.BLAS.set_num_threads(10)
     for epoch in 1:nb_epochs
-        Flux.trainmode!(model, true)
+        Flux.trainmode!(model)
         opt.eta = decayed_learning_rate(epoch, initial_lr)
         # Training
         train_loss = 0
         for batch in train_dataset
             batch_loss = 0
-            grads = gradient(Flux.params(model)) do
+            grads = Flux.gradient(Flux.params(model)) do
                 batch_loss  = flux_loss_batch(batch)
             end
             train_loss += batch_loss 
@@ -138,7 +147,7 @@ function train_and_fit()
 return model to be fitted
 """
     nb_data = 100
-    data_train = aggregateCityTrainingData(nb_data) # will occur in another function
+    data_train = aggregate_city_training_data(nb_data) # will occur in another function
     data_train, data_test = splitobs(shuffleobs(data_train), at = 1.0)
     println("Training data size: ", length(data_train))
     data_train, mean_train, std_train = normalize_features(data_train)

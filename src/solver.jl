@@ -37,6 +37,64 @@ function enumerate_connected_subgraphs(
     return subgraphs
 end
 
+function set_partitioning_optimizer(node_matrix, mst_costs, num_vertices, num_subgraphs)
+    model = Model(GLPK.Optimizer)
+    @variable(model, y[1:size(node_matrix, 1)], Bin)
+    @objective(model, Min, sum(mst_costs[i] * y[i] for i = 1:size(node_matrix, 1)))
+
+    for j = 1:num_vertices
+        @constraint(
+            model,
+            sum(node_matrix[i, j] * y[i] for i = 1:size(node_matrix, 1)) == 1
+        )
+    end
+    @constraint(model, sum(y) == num_subgraphs)
+    optimize!(model)
+
+    if termination_status(model) == MOI.OPTIMAL
+        return value.(y)
+    else
+        return 0
+    end
+end
+
+function compute_subgraph_mst_cost(subgraphs, graph)
+    mst_costs = []
+    for subgraph_nodes in subgraphs
+        subgraph, _ = induced_subgraph(graph, subgraph_nodes)
+        mst_edges = kruskal_mst(subgraph)
+        cost = sum([get_prop(subgraph, e, :weight) for e in mst_edges])
+        root_weights = [get_prop(graph, nv(graph), node, :weight) for node in subgraph_nodes]
+        cost += minimum(root_weights)
+        push!(mst_costs, cost)
+    end
+    return Float64.(mst_costs)
+end
+
+function cmst_exact_solver(theta, kwargs...)
+    instance = kwargs[:instance]
+    subgraphs = kwargs[:subgraphs]
+    # Update edge weights
+    weights = reshape(-theta, :)
+    update_edge_weights!(instance.graph, weights)
+    graph = instance.graph
+    k, m, r = instance.min_district_size,
+    instance.max_district_size,
+    instance.num_blocks / instance.target_district_size
+
+    # Compute matrices and costs
+    node_matrix = compute_node_matrix(subgraphs, nv(graph) - 1)
+    mst_costs = compute_subgraph_mst_cost(subgraphs, graph)
+
+    # Optimization
+    y_opt = set_partitioning_optimizer(node_matrix, mst_costs, nv(graph) - 1, r)
+    districts = [Vector{Int64}(subgraphs[i]) for i = 1:length(y_opt) if y_opt[i] == 1]
+
+    solution = create_solution(instance, districts, Costloader([], []))
+    y = get_solution_edges(solution)
+    return y
+end
+
 function districting_exact_solver(instance, costloader)
     lower_bound, upper_bound, num_district = instance.min_district_size,
     instance.max_district_size,
@@ -65,26 +123,5 @@ function districting_exact_solver(instance, costloader)
         districts =[Vector{Int64}(unique_subgraphs[i]) for i = 1:length(y_opt) if y_opt[i] == 1]
         solution = create_solution(instance, districts, costloader, "Districting")
         return solution, unique_subgraphs
-    end
-end
-
-function set_partitioning_optimizer(node_matrix, mst_costs, num_vertices, num_subgraphs)
-    model = Model(GLPK.Optimizer)
-    @variable(model, y[1:size(node_matrix, 1)], Bin)
-    @objective(model, Min, sum(mst_costs[i] * y[i] for i = 1:size(node_matrix, 1)))
-
-    for j = 1:num_vertices
-        @constraint(
-            model,
-            sum(node_matrix[i, j] * y[i] for i = 1:size(node_matrix, 1)) == 1
-        )
-    end
-    @constraint(model, sum(y) == num_subgraphs)
-    optimize!(model)
-
-    if termination_status(model) == MOI.OPTIMAL
-        return value.(y)
-    else
-        return 0
     end
 end

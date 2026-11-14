@@ -4,7 +4,6 @@ struct Edge
     weight::Float64
 end
 
-
 mutable struct Instance
     city_name::String
     num_blocks::Int

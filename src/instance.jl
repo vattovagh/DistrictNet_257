@@ -79,7 +79,7 @@ function extract_edge_feature(g::MetaGraph)
 end
 
 function randomized_constructor(solution, mc_samples)
-    # return y as the monte carlo solution of randomized constructure
+    # return y as the monte carlo solution
     y = zeros(ne(solution.instance.graph))
     for i in 1:mc_samples
         W = rand(ne(solution.instance.graph))
