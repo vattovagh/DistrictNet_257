@@ -22,3 +22,5 @@ All of this data is pulled from the original DistrictNet project.
 # Code
 
 `train.jl` should encapsulate the whole training step of DistrictNet.
+
+`instance.jl` encapsulates production/processing of training data, which was an extensive task in the original DistrictNet codebase. 
