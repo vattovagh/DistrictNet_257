@@ -64,3 +64,17 @@ function get_edge_id(g, u, v)
     idx = findfirst(x -> x == (u, v) || x == (v, u), g_edges)
     return idx
 end
+
+# Scale features to zero mean / unit std. Pass MEAN and STD to reuse training statistics.
+function normalize_features(data, MEAN = nothing, STD = nothing)
+    if MEAN === nothing && STD === nothing
+        all_features = hcat([x[1].feature for x in data]...)
+        MEAN = mean(all_features, dims = 2)
+        STD = std(all_features, dims = 2)
+    end
+    for item in data
+        item[1].feature = (item[1].feature .- MEAN) ./ STD
+        item[1].gnn_graph.ndata.x = Float32.(item[1].feature)
+    end
+    return data, MEAN, STD
+end

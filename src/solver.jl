@@ -71,28 +71,23 @@ function compute_subgraph_mst_cost(subgraphs, graph)
     return Float64.(mst_costs)
 end
 
-function cmst_exact_solver(theta; kwargs...)
-    instance = kwargs[:instance]
-    subgraphs = kwargs[:subgraphs]
-    # Update edge weights
-    weights = reshape(-theta, :)
-    update_edge_weights!(instance.graph, weights)
+function solve_districts(theta, instance, subgraphs)
+    update_edge_weights!(instance.graph, reshape(-theta, :))
     graph = instance.graph
-    k, m, r = instance.min_district_size,
-    instance.max_district_size,
-    instance.num_blocks / instance.target_district_size
+    n_districts = instance.num_blocks / instance.target_district_size
 
-    # Compute matrices and costs
     node_matrix = compute_node_matrix(subgraphs, nv(graph) - 1)
     mst_costs = compute_subgraph_mst_cost(subgraphs, graph)
+    y_opt = set_partitioning_optimizer(node_matrix, mst_costs, nv(graph) - 1, n_districts)
+    y_opt == 0 && error("No feasible districting for $(instance.city_name)")
+    return [Vector{Int64}(subgraphs[i]) for i = 1:length(y_opt) if y_opt[i] == 1]
+end
 
-    # Optimization
-    y_opt = set_partitioning_optimizer(node_matrix, mst_costs, nv(graph) - 1, r)
-    districts = [Vector{Int64}(subgraphs[i]) for i = 1:length(y_opt) if y_opt[i] == 1]
-
+function cmst_exact_solver(theta; kwargs...)
+    instance = kwargs[:instance]
+    districts = solve_districts(theta, instance, kwargs[:subgraphs])
     solution = create_solution(instance, districts, Costloader([], []))
-    y = get_solution_edges(solution)
-    return y
+    return get_solution_edges(solution)
 end
 
 function districting_exact_solver(instance, costloader)

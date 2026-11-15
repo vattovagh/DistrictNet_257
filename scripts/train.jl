@@ -25,10 +25,8 @@ const NB_BU_LARGE = 120
 const DEPOT_LOCATION = "C"
 const NB_DATA = 200
 const NB_BU_SMALL = 30
-const NB_SCENARIO = 100
 # Training Hyperparameters
 const BATCH_SIZE = 1
-const HIDDEN_SIZE = 64
 const NB_SAMPLES = 20
 const EPSILON = 1.0
 const WEIGHT_DECAY = 0.0
@@ -39,26 +37,8 @@ const MC_SAMPLES = 20
 # Solver Hyperparameters
 const MAX_TIME = 1200
 const PERTURBATION_PROBABILITY = 0.985
-const PENALTY = 10000
 
 # helpers
-
-function normalize_features(data, MEAN = nothing, STD = nothing)
-    data_features = [x[1].feature for x in data]
-    data_features = hcat(data_features...)
-    if MEAN == nothing && STD == nothing
-        MEAN = mean(data_features, dims = 2) #*0? The original paper had this. not sure why.
-        STD = std(data_features, dims = 2)
-    end
-
-    for i = 1:length(data)
-        data[i][1].feature = (data[i][1].feature .- MEAN) ./ STD
-        data[i][1].gnn_graph.ndata.x = Float32.(data[i][1].feature)
-    end
-    data_features = nothing
-    GC.gc()
-    return data, MEAN, STD
-end
 
 function decayed_learning_rate(epoch, initial_lr,
                                decay_steps=10, decay_rate=0.9, min_lr=0.0001)
@@ -67,28 +47,6 @@ function decayed_learning_rate(epoch, initial_lr,
 end
 
 # subfunctions for training
-
-function build_gnn_model(input_size, hidden_size)
-"""
-# Args
-- input_size: size of graph that the model will be used for
-- hidden_size: size for hidden layers
-# Return
-- GNN model
-"""
-    model = Chain(
-        GNNChain(
-            GraphConv(input_size => hidden_size, relu; aggr=mean), 
-            GraphConv(hidden_size => hidden_size, relu; aggr=mean),
-            GraphConv(hidden_size => hidden_size; aggr=mean),
-            Dense(hidden_size => hidden_size, relu),
-            Dense(hidden_size => hidden_size),
-            Dense(hidden_size => 1),
-            vec,
-        ),    x -> x.ndata.x,
-        )
-    return model
-end
 
 function randomize_data(data, mc_samples=1)
     temps_data = []
@@ -146,12 +104,12 @@ function train_and_fit()
 """
 return model to be fitted
 """
-    nb_data = 100
-    data_train = aggregate_city_training_data(nb_data) # will occur in another function
-    data_train, data_test = splitobs(shuffleobs(data_train), at = 1.0)
-    println("Training data size: ", length(data_train))
+    nb_data = NB_TRAIN
+    data_train = aggregate_city_training_data(nb_data)
+    data_test = aggregate_city_training_data(NB_TEST, nb_data + 1)
+    println("Training data size: ", length(data_train), ", test data size: ", length(data_test))
     data_train, mean_train, std_train = normalize_features(data_train)
-    data_test, mean_test, mean_train = normalize_features(data_test, mean_train, std_train)
+    data_test, _, _ = normalize_features(data_test, mean_train, std_train)
     hyperparams = (BATCH_SIZE, HIDDEN_SIZE, NB_SAMPLES, EPSILON, WEIGHT_DECAY, INITIAL_LR, NB_EPOCHS, MC_SAMPLES)
     model_name = "models/DistrictNet257_$(nb_data).jld2"
     initial_graph = data_train[1][1].instance.graph
@@ -169,7 +127,7 @@ return model to be fitted
     if !isdir("models")
         mkpath("models")
     end
-    jldsave(model_name; model_state)
+    jldsave(model_name; model_state, mean_train, std_train)
     return model, mean_train, std_train
 end
 

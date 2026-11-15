@@ -19,12 +19,19 @@ include("solution.jl")
 include("solver.jl")
 include("district.jl")
 include("utils.jl")
+include("gnn.jl")
+include("evaluation.jl")
 
 Random.seed!(1234)
 
 const NB_BU_SMALL = 30
 const DEPOT_LOCATION = "C"
 const MC_SAMPLES = 20
+const NB_SCENARIO = 100
+const PENALTY = 10000
+const NB_TRAIN = 100
+const NB_TEST = 20
+const HIDDEN_SIZE = 64
 
 # helpers
 
@@ -256,7 +263,6 @@ function aggregate_city_training_data(nb_data, start=1)
             ),
         )
     end
-    show(IOContext(stdout, :limit => true), "text/plain", data_train)
     return data_train
 end
 

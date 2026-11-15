@@ -1,4 +1,14 @@
-# GNN that predicts edge/node scores (or district cost-to-go) from city features.
-
-# TODO: build_model(n_features; hidden, layers) -> Flux/GNN chain
-# TODO: forward(model, city) -> scores fed to the solver
+function build_gnn_model(input_size, hidden_size)
+    return Chain(
+        GNNChain(
+            GraphConv(input_size => hidden_size, relu; aggr = mean),
+            GraphConv(hidden_size => hidden_size, relu; aggr = mean),
+            GraphConv(hidden_size => hidden_size; aggr = mean),
+            Dense(hidden_size => hidden_size, relu),
+            Dense(hidden_size => hidden_size),
+            Dense(hidden_size => 1),
+            vec,
+        ),
+        x -> x.ndata.x,
+    )
+end
