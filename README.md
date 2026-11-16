@@ -33,3 +33,5 @@ You should preferably run these scripts in the order they are listed here. Run t
 # Code - src/ and dependencies/ folders
 
 These folders consists of code that is used in order to assist with tasks that are not machine-learning-related and are instead related to the specs of the original project. This includes work with graphs, solutions, district and solver data structures, and conversion into a feasible solution. `src/` consists of Julia code, and `dependencies/` consists of C++ code. 
+
+These folders are solely used as dependencies for our project, with minor updates in order to assist our methods. We do not claim ownership of it, and our usage of it is permitted by the LICENSE at `https://github.com/cheikh025/DistrictNet/`, where you can also view the original version of these files, where you can view LICENSE to view their usage terms.
