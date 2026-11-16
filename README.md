@@ -20,6 +20,10 @@ All of this data is pulled from the original DistrictNet project.
 
 # Code - Top Level Scripts
 
+You should preferably run these scripts in the order they are listed here. Run them by:
+
+`julia --project=. scripts/<name>.jl`
+
 `train.jl` should encapsulate the whole training step of DistrictNet.
 
 `evaluate.jl` holds out the model and tests on new data to confirm its quality.
