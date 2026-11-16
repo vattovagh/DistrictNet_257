@@ -78,3 +78,26 @@ function normalize_features(data, MEAN = nothing, STD = nothing)
     end
     return data, MEAN, STD
 end
+
+function get_instance_features(instance)
+    g = instance.graph
+    edges_data = extract_edge_feature(g)
+    return hcat(edges_data...)
+end
+
+function extract_edge_feature(g::MetaGraph)
+    function get_filtered_properties(dict)
+        return [val for (key, val) in dict if key ∉ [:id, :centre]]
+    end
+    edge_data = [
+        begin
+            prop_src, prop_dst = props(g, src(e)), props(g, dst(e))
+            vector_src, vector_dst =
+                get_filtered_properties(prop_src), get_filtered_properties(prop_dst)
+            dist = euclidean_distance(prop_src[:centre], prop_dst[:centre])
+            vcat(0.5 * (vector_src + vector_dst), dist)
+        end for e in edges(g)
+    ]
+
+    return [Vector{Float32}(feature) for feature in edge_data]
+end

@@ -5,16 +5,6 @@
 # TODO: implement other functions called in this one. They currently aren't in this project, and this code won't run yet.
 
 export train_and_fit
-"""
-using InferOpt, Plots
-using MLUtils, GraphNeuralNetworks, Graphs, MetaGraphs, GraphPlot
-using JSON, FilePaths, Random, LinearAlgebra
-using Distributions, Statistics, UnionFind, Flux
-using DataStructures, Serialization, FileIO
-using Base.Filesystem: isfile
-using Combinatorics, Optim
-using JuMP, GLPK, CxxWrap, DistributedArrays, JLD2
-"""
 
 include("../src/instance.jl")
 
@@ -35,7 +25,7 @@ const NB_EPOCHS = 100
 const MC_SAMPLES = 20
 
 # Solver Hyperparameters
-const MAX_TIME = 1200
+const MAX_TIME = 600 # was originally 1200 = 20 mins. 
 const PERTURBATION_PROBABILITY = 0.985
 
 # helpers

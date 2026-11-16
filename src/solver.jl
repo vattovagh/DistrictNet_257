@@ -90,6 +90,43 @@ function cmst_exact_solver(theta; kwargs...)
     return get_solution_edges(solution)
 end
 
+"""
+function Exact_solve_instance(instance, costloader, solver_type, params)
+    update_edge_weights!(
+        instance.graph,
+        solver_type == "CMST" ? params : rand(ne(instance.graph)),
+    )
+    graph = instance.graph
+    lb, ub, k = instance.min_district_size,
+    instance.max_district_size,
+    instance.num_blocks / instance.target_district_size
+    subgraphs = enumerate_connected_subgraphs(graph, lb, ub, solver_type == "GNN" ? false : true)
+    node_matrix = compute_node_matrix(subgraphs, nv(graph) - (solver_type == "GNN" ? 0 : 1))
+
+
+    districts = []
+    for i = 1:length(subgraphs)
+        d = District(i, subgraphs[i], 0.0, true)
+        push!(districts, d)
+    end
+    district_cost = [
+        compute_district_cost(instance, d, costloader, solver_type, params) for
+        d in districts
+    ]
+
+    y_opt = set_partitioning_optimizer(
+        node_matrix,
+        district_cost,
+        nv(graph) - (solver_type == "GNN" ? 0 : 1),
+        k,
+    )
+    districts = [Vector{Int64}(subgraphs[i]) for i = 1:length(y_opt) if y_opt[i] == 1]
+    solution = create_solution(instance, districts, costloader, solver_type, params)
+
+    return solution
+end
+"""
+
 function districting_exact_solver(instance, costloader)
     lower_bound, upper_bound, num_district = instance.min_district_size,
     instance.max_district_size,

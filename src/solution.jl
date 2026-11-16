@@ -74,3 +74,19 @@ function get_district_id(districts::Array{District}, node::Int)::Int
     end
     error("The node $node is not in any district")
 end
+
+function get_border_nodes(solution::Solution, id1::Int, id2::Int)
+    district1, district2 = solution.districts[id1], solution.districts[id2]
+    border1, border2 = Set{Int}(), Set{Int}()
+
+    for node1 in district1.nodes
+        for node2 in district2.nodes
+            if has_edge(solution.instance.graph, node1, node2)
+                push!(border1, node1)
+                push!(border2, node2)
+            end
+        end
+    end
+
+    return isempty(border1) ? () : (border1, border2)
+end
