@@ -24,11 +24,15 @@ You should preferably run these scripts in the order they are listed here. Run t
 
 `julia --project=. scripts/<name>.jl`
 
-`train.jl` should encapsulate the whole training step of DistrictNet.
+`scripts/train.jl` should encapsulate the whole training step of DistrictNet.
 
-`evaluate.jl` holds out the model and tests on new data to confirm its quality.
+`scripts/evaluate.jl` holds out the model and tests on new data to confirm its quality.
 
-`construct_solutions.jl` uses DistrictNet's Kruskal, greedy-merging, and district repair algorithms to convert the graph solution into real districts.
+`scripts/construct_solutions.jl` uses DistrictNet's Kruskal, greedy-merging, and district repair algorithms to convert the graph solution into real districts.
+
+# Code - Other helper code (don't run these)
+
+`scripts/gnn.jl` is a helper that contains the specs for our GNN model.
 
 # Code - src/ and dependencies/ folders
 

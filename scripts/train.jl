@@ -7,6 +7,7 @@
 export train_and_fit
 
 include("../src/instance.jl")
+include("gnn.jl")
 
 # these hyperparameters are taken from original DistrictNet.
 

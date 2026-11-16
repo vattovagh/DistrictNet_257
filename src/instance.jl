@@ -19,7 +19,7 @@ include("solution.jl")
 include("solver.jl")
 include("district.jl")
 include("utils.jl")
-include("gnn.jl")
+include("../scripts/gnn.jl")
 include("evaluation.jl")
 
 Random.seed!(1234)
