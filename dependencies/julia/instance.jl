@@ -1,11 +1,4 @@
 # Core types shared by every other file.
-
-# TODO: BasicUnit  -- one geographic unit (id, centroid, population/demand, area, ...)
-# TODO: City       -- units + adjacency Graph + metadata (name, depot location)
-# TODO: District   -- set of unit ids, must be connected and within capacity
-# TODO: Partition  -- vector of Districts covering all units exactly once
-# TODO: validate(partition, city) -> Bool  (contiguity, capacity, coverage)
-
 using InferOpt
 using MLUtils, GraphNeuralNetworks, Graphs, MetaGraphs
 using JSON, FilePaths, Random, LinearAlgebra
@@ -19,7 +12,7 @@ include("solution.jl")
 include("solver.jl")
 include("district.jl")
 include("utils.jl")
-include("../scripts/gnn.jl")
+# include("../scripts/gnn.jl") 
 include("evaluation.jl")
 
 Random.seed!(1234)

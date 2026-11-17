@@ -3,7 +3,7 @@
 
 using CSV, DataFrames
 
-include("../src/instance.jl")
+include("../dependencies/julia/instance.jl")
 
 model_path = length(ARGS) >= 1 ? ARGS[1] : "models/DistrictNet257_$(NB_TRAIN).jld2"
 saved = JLD2.load(model_path)

@@ -1,4 +1,4 @@
-include("../src/construct.jl")
+include("../dependencies/julia/construct.jl")
 include("train.jl")
 
 # now that we have training and testing (evaluating), we can construct results into a particular districting solution.
