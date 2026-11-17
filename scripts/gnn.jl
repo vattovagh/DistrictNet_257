@@ -32,20 +32,27 @@ function build_gnn_model(input_size, hidden_size)
     )
 end
 
-function train_GNN(model, data_train, data_test, hyperparams)
-
+function train_gnn_model(model, data_train, data_test, hyperparams)
     # hyperparameter processing
     samples, samples_monte_carlo, batchsize, hidden_size, epochs, epsilon, lr = hyperparams
 
     # settings
-    optim = Flux.Optimise.Adam(lr)
+    # optim = Flux.Optimise.Adam(lr)
+    optim = Flux.setup(Flux.Optimise.Adam(lr), model)
     LinearAlgebra.BLAS.set_num_threads(16)
 
     regularized_predictor = PerturbedAdditive(cmst_exact_solver; ε=epsilon, nb_samples=samples, seed=1234, is_parallel=true)
     loss_func = FenchelYoungLoss(regularized_predictor)
 
-    flux_loss(x, y) = loss_func(model(x.gnn_graph), y; instance=x.instance, subgraphs=x.subgraphs)
-    flux_loss_batch(batch) = sum(flux_loss(item[1], item[2]) for item in batch) 
+    flux_loss(m, x, y) = loss_func(
+        m(x.gnn_graph),
+        y;
+        instance=x.instance,
+        subgraphs=x.subgraphs
+    )
+    flux_loss_batch(m, batch) = sum(
+        flux_loss(m, item[1], item[2]) for item in batch
+    )
 
     # training data processing
     data_train = randomize_data(data_train, samples_monte_carlo)
@@ -56,15 +63,17 @@ function train_GNN(model, data_train, data_test, hyperparams)
     start_t = time()
     for epoch in 1:epochs
         Flux.trainmode!(model)
-        optim.eta = decayed_learning_rate(epoch, lr)
+        # Optimisers.adjust!(optim, eta=decayed_learning_rate(epoch, lr))
+        Flux.adjust!(optim, decayed_learning_rate(epoch, lr))
         train_loss = 0
         for batch in train_dataset
             batch_loss = 0
-            grads = Flux.gradient(Flux.params(model)) do
-                batch_loss  = flux_loss_batch(batch)
+            grads = Flux.withgradient(model) do m
+                batch_loss = flux_loss_batch(m, batch)
             end
-            train_loss += batch_loss 
-            Flux.update!(optim, Flux.params(model), grads)
+
+            train_loss += grads.val
+            Flux.update!(optim, model, grads.grad[1])
         end
 
         # Normalize training loss

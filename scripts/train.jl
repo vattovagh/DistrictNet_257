@@ -49,7 +49,7 @@ return model to be fitted
         return model, mean_train, stdev_train
     end
     model = build_gnn_model(input_size, HIDDEN_SIZE)
-    model = train_GNN(model, data_train, data_test, hyperparameters)
+    model = train_gnn_model(model, data_train, data_test, hyperparameters)
     model_state = Flux.state(model)
     if !isdir("models")
         mkpath("models")
