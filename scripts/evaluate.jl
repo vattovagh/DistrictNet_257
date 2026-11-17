@@ -10,7 +10,7 @@ model_path = length(ARGS) >= 1 ? ARGS[1] : "models/DistrictNet257_$(NB_TRAIN).jl
 saved = JLD2.load(model_path)
 
 test_cities = aggregate_city_training_data(NB_TEST, NB_TRAIN + 1)
-test_cities, _, _ = normalize_features(test_cities, saved["mean_train"], saved["std_train"])
+test_cities, _, _ = normalize_features(test_cities, saved["mean_train"], saved["stdev_train"])
 
 input_size = size(saved["mean_train"], 1)
 trained = build_gnn_model(input_size, HIDDEN_SIZE)

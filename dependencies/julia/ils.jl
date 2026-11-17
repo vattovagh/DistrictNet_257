@@ -955,11 +955,11 @@ function Iterated_local_search(
     iters = 0
     solution = localSearch(solution, costloader, start_time, mode, model)
     while (time() - start_time) < MAX_TIME
-        println(iters)
         perturbation(solution, costloader, mode, model)
         solution = localSearch(solution, costloader, start_time, mode, model)
         if solution.cost < best_solution.cost
             best_solution = deepcopy(solution)
+            println(iters)
             iters = 0
         else
             iters += 1
